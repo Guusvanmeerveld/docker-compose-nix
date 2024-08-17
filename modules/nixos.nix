@@ -20,7 +20,7 @@ in {
       };
 
       ensureUser = lib.mkOption {
-        type = lib.type.bool;
+        type = lib.types.bool;
         default = true;
 
         description = "Whether to create the specified the user";
