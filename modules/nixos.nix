@@ -64,7 +64,7 @@ in {
   config = lib.mkIf cfg.enable {
     users.users."${cfg.user}" = lib.mkIf cfg.ensureUser {
       isSystemUser = true;
-      extraGroups = ["docker"];
+      group = "docker";
     };
 
     systemd.services = builtins.listToAttrs (map ({
