@@ -12,6 +12,20 @@ in {
 
       package = lib.mkPackageOption pkgs "docker" {};
 
+      user = lib.mkOption {
+        type = lib.types.str;
+        default = "docker-compose";
+
+        description = "The user to run the service as";
+      };
+
+      ensureUser = lib.mkOption {
+        type = lib.type.bool;
+        default = true;
+
+        description = "Whether to create the specified the user";
+      };
+
       services = lib.mkOption {
         type = lib.types.listOf (lib.types.submodule {
           options = {
@@ -47,13 +61,18 @@ in {
     };
   };
 
-  config = {
+  config = lib.mkIf cfg.enable {
+    users.users."${cfg.user}" = lib.mkIf cfg.ensureUser {
+      isSystemUser = true;
+      extraGroups = ["docker"];
+    };
+
     systemd.services = builtins.listToAttrs (map ({
         name,
         file,
         env,
       }: {
-        inherit name;
+        name = "${name}-docker";
 
         value = let
           envFile =
@@ -81,6 +100,8 @@ in {
             Type = "simple";
             Restart = "always";
             RemainAfterExit = true;
+
+            User = cfg.user;
 
             ExecStart = "${compose} up";
             ExecStop = "${compose} down";
