@@ -5,6 +5,30 @@
   ...
 }: let
   cfg = config.services.docker-compose;
+
+  envType = with lib.types; [
+    path
+    (attrsOf (oneOf [str int]))
+  ];
+
+  createEnvFile = env:
+    pkgs.writeTextFile {
+      name = "docker-compose-env";
+      text = ''
+        ${lib.concatStringsSep "\n" (
+          lib.mapAttrsToList
+          (key: value: "${key}='${toString value}'")
+          env
+        )}
+      '';
+    };
+
+  createEnvOption = env: let
+    file =
+      if lib.isPath env
+      then env
+      else (createEnvFile env);
+  in "--env-file ${file}";
 in {
   options = {
     services.docker-compose = {
@@ -40,17 +64,30 @@ in {
             };
 
             env = lib.mkOption {
-              type = lib.types.oneOf (with lib.types; [
-                path
-                (attrsOf (oneOf [str int]))
-              ]);
+              type = lib.types.oneOf (envType ++ [(lib.types.listOf envType)]);
 
-              default = {};
+              default = [];
 
               description = "Add a .env file to the docker compose config. Can be either a path to the .env file, or just a set specifying the variables";
 
               example = {
                 PORT = 80;
+              };
+            };
+
+            removeOrphans = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+
+              description = "Whether to add the remove orphans option: Remove containers for services not defined in the Compose file";
+            };
+
+            removeImages = {
+              enable = lib.mkEnableOption ''Remove images used by services. "local" remove only images that don't have a custom tag ("local"|"all")'';
+
+              mode = lib.mkOption {
+                type = lib.types.enum ["local" "all"];
+                default = "all";
               };
             };
           };
@@ -71,26 +108,22 @@ in {
         name,
         file,
         env,
+        removeOrphans,
+        removeImages,
       }: {
         name = "${name}-docker";
 
         value = let
-          envFile =
-            if lib.isPath env
-            then env
-            else
-              pkgs.writeTextFile {
-                name = "${name}-docker-compose-env";
-                text = ''
-                  ${lib.concatStringsSep "\n" (
-                    lib.mapAttrsToList
-                    (key: value: "${key}='${toString value}'")
-                    env
-                  )}
-                '';
-              };
+          envFileOptions =
+            if lib.isList env
+            then lib.concatStringsSep " " (map (envItem: createEnvOption envItem) env)
+            else createEnvOption env;
 
-          compose = "${cfg.package}/bin/docker compose -f ${file} --env-file ${envFile}";
+          removeOrphansOption = lib.optionalString removeOrphans "--remove-orphans";
+
+          removeImagesOption = lib.optionalString removeImages.enable "--rmi ${removeImages.mode}";
+
+          compose = "${cfg.package}/bin/docker compose -f ${file} ${envFileOptions}";
         in {
           description = "${name} docker compose service";
           after = ["multi-user.target"];
@@ -103,8 +136,8 @@ in {
 
             User = cfg.user;
 
-            ExecStart = "${compose} up";
-            ExecStop = "${compose} down";
+            ExecStart = "${compose} up ${removeOrphansOption}";
+            ExecStop = "${compose} down ${removeOrphansOption} ${removeImagesOption}";
           };
         };
       })
