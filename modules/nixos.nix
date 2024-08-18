@@ -64,7 +64,7 @@ in {
             };
 
             env = lib.mkOption {
-              type = lib.types.oneOf (envType ++ [(lib.types.listOf envType)]);
+              type = lib.types.oneOf (envType ++ [(lib.types.listOf (lib.types.oneOf envType))]);
 
               default = [];
 
@@ -116,7 +116,7 @@ in {
         value = let
           envFileOptions =
             if lib.isList env
-            then lib.concatStringsSep " " (map (envItem: createEnvOption envItem) env)
+            then lib.concatMapStringsSep " " (item: (createEnvOption item)) env
             else createEnvOption env;
 
           removeOrphansOption = lib.optionalString removeOrphans "--remove-orphans";
