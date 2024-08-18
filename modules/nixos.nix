@@ -50,14 +50,9 @@ in {
         description = "Whether to create the specified the user";
       };
 
-      services = lib.mkOption {
-        type = lib.types.listOf (lib.types.submodule {
+      projects = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.submodule {
           options = {
-            name = lib.mkOption {
-              type = lib.types.str;
-              description = "The service name";
-            };
-
             file = lib.mkOption {
               type = lib.types.path;
               description = "The path to the compose file";
@@ -104,16 +99,14 @@ in {
       group = "docker";
     };
 
-    systemd.services = builtins.listToAttrs (map ({
-        name,
-        file,
-        env,
-        removeOrphans,
-        removeImages,
-      }: {
-        name = "${name}-docker";
-
-        value = let
+    systemd.services =
+      builtins.mapAttrs (
+        name: {
+          file,
+          env,
+          removeOrphans,
+          removeImages,
+        }: let
           envFileOptions =
             if lib.isList env
             then lib.concatMapStringsSep " " (item: (createEnvOption item)) env
@@ -139,8 +132,8 @@ in {
             ExecStart = "${compose} up ${removeOrphansOption}";
             ExecStop = "${compose} down ${removeOrphansOption} ${removeImagesOption}";
           };
-        };
-      })
-      cfg.services);
+        }
+      )
+      cfg.projects;
   };
 }
