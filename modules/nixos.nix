@@ -85,6 +85,8 @@ in {
                 default = "all";
               };
             };
+
+            logToService = lib.mkEnableOption "Whether to follow the log of the docker compose file in the systemd service";
           };
         });
 
@@ -106,6 +108,7 @@ in {
           env,
           removeOrphans,
           removeImages,
+          ...
         }: let
           envFileOptions =
             if lib.isList env
@@ -116,7 +119,7 @@ in {
 
           removeImagesOption = lib.optionalString removeImages.enable "--rmi ${removeImages.mode}";
 
-          compose = "${cfg.package}/bin/docker compose -f ${file} ${envFileOptions}";
+          docker-compose = "${cfg.package}/bin/docker compose --file ${file} ${envFileOptions}";
         in {
           description = "${name} docker compose service";
           after = ["multi-user.target"];
@@ -129,8 +132,8 @@ in {
 
             User = cfg.user;
 
-            ExecStart = "${compose} up ${removeOrphansOption}";
-            ExecStop = "${compose} down ${removeOrphansOption} ${removeImagesOption}";
+            ExecStart = "${docker-compose} up ${removeOrphansOption} --detach";
+            ExecStop = "${docker-compose} down ${removeOrphansOption} ${removeImagesOption}";
           };
         }
       )
