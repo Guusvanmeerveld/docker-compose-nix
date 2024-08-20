@@ -110,6 +110,8 @@ in {
           removeImages,
           ...
         }: let
+          composeDir = pkgs.writeTextDir "${name}/docker-compose.yaml" file.text;
+
           envFileOptions =
             if lib.isList env
             then lib.concatMapStringsSep " " (item: (createEnvOption item)) env
@@ -119,7 +121,7 @@ in {
 
           removeImagesOption = lib.optionalString removeImages.enable "--rmi ${removeImages.mode}";
 
-          docker-compose = "${cfg.package}/bin/docker compose --file ${file}";
+          docker-compose = "${cfg.package}/bin/docker compose --file ${composeDir}/${name}/docker-compose.yaml";
         in {
           description = "${name} docker compose service";
           after = ["multi-user.target"];
