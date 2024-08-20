@@ -119,7 +119,7 @@ in {
 
           removeImagesOption = lib.optionalString removeImages.enable "--rmi ${removeImages.mode}";
 
-          docker-compose = "${cfg.package}/bin/docker compose --file ${file} ${envFileOptions}";
+          docker-compose = "${cfg.package}/bin/docker compose --file ${file}";
         in {
           description = "${name} docker compose service";
           after = ["multi-user.target"];
@@ -132,7 +132,7 @@ in {
 
             User = cfg.user;
 
-            ExecStart = "${docker-compose} up ${removeOrphansOption} --detach";
+            ExecStart = "${docker-compose} ${envFileOptions} up ${removeOrphansOption} --detach";
             ExecStop = "${docker-compose} down ${removeOrphansOption} ${removeImagesOption}";
           };
         }
