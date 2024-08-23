@@ -110,7 +110,18 @@ in {
           removeImages,
           ...
         }: let
-          composeDir = pkgs.writeTextDir "${name}/docker-compose.yaml" file.text;
+          composePackage = pkgs.stdenv.mkDerivation (let
+            out = placeholder "out";
+          in {
+            name = "docker-compose-${name}";
+            version = "0.1.0";
+
+            installPhase = ''
+              mkdir ${out}/${name}
+
+              cp ${file} ${out}/${name}/docker-compose.yaml
+            '';
+          });
 
           envFileOptions =
             if lib.isList env
@@ -121,7 +132,7 @@ in {
 
           removeImagesOption = lib.optionalString removeImages.enable "--rmi ${removeImages.mode}";
 
-          docker-compose = "${cfg.package}/bin/docker compose --file ${composeDir}/${name}/docker-compose.yaml";
+          docker-compose = "${cfg.package}/bin/docker compose --file ${composePackage}/${name}/docker-compose.yaml";
         in {
           description = "${name} docker compose service";
           after = ["multi-user.target"];
