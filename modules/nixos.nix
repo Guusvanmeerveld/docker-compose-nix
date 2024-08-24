@@ -110,18 +110,18 @@ in {
           removeImages,
           ...
         }: let
-          composePackage = pkgs.stdenv.mkDerivation (let
-            out = placeholder "out";
-          in {
+          composePackage = pkgs.stdenv.mkDerivation {
             name = "docker-compose-${name}";
             version = "0.1.0";
 
-            installPhase = ''
-              mkdir ${out}/${name}
+            phases = ["installPhase"];
 
-              cp ${file} ${out}/${name}/docker-compose.yaml
+            installPhase = ''
+              mkdir $out/${name} -p
+
+              cp ${file} $out/${name}/docker-compose.yaml
             '';
-          });
+          };
 
           envFileOptions =
             if lib.isList env
