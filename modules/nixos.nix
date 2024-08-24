@@ -90,7 +90,7 @@ in {
           };
         });
 
-        default = [];
+        default = {};
       };
     };
   };
