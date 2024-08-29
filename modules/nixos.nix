@@ -146,7 +146,7 @@ in {
             User = cfg.user;
 
             ExecStart = "${docker-compose} ${envFileOptions} up ${removeOrphansOption} --detach";
-            ExecStop = "${docker-compose} down ${removeOrphansOption} ${removeImagesOption}";
+            ExecStop = "${docker-compose} ${envFileOptions} down ${removeOrphansOption} ${removeImagesOption}";
           };
         }
       )
