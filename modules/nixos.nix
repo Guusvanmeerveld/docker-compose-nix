@@ -7,6 +7,7 @@
   cfg = config.services.docker-compose;
 
   envType = with lib.types; [
+    str
     path
     (attrsOf (oneOf [str int]))
   ];
@@ -25,9 +26,9 @@
 
   createEnvOption = env: let
     file =
-      if lib.isPath env
-      then env
-      else (createEnvFile env);
+      if lib.isAttrs env
+      then (createEnvFile env)
+      else env;
   in "--env-file ${file}";
 in {
   options = {
@@ -132,7 +133,7 @@ in {
 
           removeImagesOption = lib.optionalString removeImages.enable "--rmi ${removeImages.mode}";
 
-          docker-compose = "${cfg.package}/bin/docker compose --file ${composePackage}/${name}/docker-compose.yaml";
+          docker-compose = "${cfg.package}/bin/docker compose --file ${composePackage}/${name}/docker-compose.yaml ${envFileOptions}";
         in {
           description = "${name} docker compose service";
           after = ["multi-user.target"];
@@ -145,8 +146,8 @@ in {
 
             User = cfg.user;
 
-            ExecStart = "${docker-compose} ${envFileOptions} up ${removeOrphansOption} --detach";
-            ExecStop = "${docker-compose} ${envFileOptions} down ${removeOrphansOption} ${removeImagesOption}";
+            ExecStart = "${docker-compose} up ${removeOrphansOption} --detach";
+            ExecStop = "${docker-compose} down ${removeOrphansOption} ${removeImagesOption}";
           };
         }
       )
