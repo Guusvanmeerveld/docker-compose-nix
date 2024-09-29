@@ -6,7 +6,7 @@
 }: let
   cfg = config.services.docker-compose;
 
-  shared = import ./shared.nix;
+  shared = import ./shared.nix {inherit lib pkgs;};
 
   createEnvFile = env:
     pkgs.writeTextFile {
