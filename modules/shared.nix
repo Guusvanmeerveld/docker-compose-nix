@@ -29,6 +29,13 @@ in {
         description = "Whether to create the specified the user";
       };
 
+      groups = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+
+        description = "Extra groups the user that is running the services should be a part of";
+      };
+
       projects = lib.mkOption {
         type = lib.types.attrsOf (lib.types.submodule {
           options = {
@@ -49,6 +56,13 @@ in {
               };
             };
 
+            networks = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [];
+
+              description = "Networks that this docker compose file depends on";
+            };
+
             removeOrphans = lib.mkOption {
               type = lib.types.bool;
               default = true;
@@ -66,6 +80,21 @@ in {
             };
 
             logToService = lib.mkEnableOption "Whether to follow the log of the docker compose file in the systemd service";
+          };
+        });
+
+        default = {};
+      };
+
+      networks = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.submodule {
+          options = {
+            driver = lib.mkOption {
+              type = lib.types.enum ["bridge" "host" "none" "overlay" "ipvlan" "macvlan"];
+              default = "bridge";
+
+              description = "Driver to manage the network";
+            };
           };
         });
 
