@@ -36,6 +36,12 @@ in {
         description = "Extra groups the user that is running the services should be a part of";
       };
 
+      globalEnv = lib.mkOption {
+        type = lib.types.oneOf (envType ++ [(lib.types.listOf (lib.types.oneOf envType))]);
+        default = [];
+        description = "Set environmental variables for ALL listed projects";
+      };
+
       projects = lib.mkOption {
         type = lib.types.attrsOf (lib.types.submodule {
           options = {

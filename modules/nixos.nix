@@ -54,10 +54,18 @@
           '';
         };
 
-        envFileOptions =
+        # Ensure the env variables are in a list.
+        envList =
           if lib.isList env
-          then lib.concatMapStringsSep " " (item: (createEnvOption item)) env
-          else createEnvOption env;
+          then env
+          else lib.singleton env;
+
+        globalEnvList =
+          if lib.isList cfg.globalEnv
+          then cfg.globalEnv
+          else lib.singleton cfg.globalEnv;
+
+        envFileOptions = lib.concatMapStringsSep " " (item: (createEnvOption item)) (envList ++ globalEnvList);
 
         removeOrphansOption = lib.optionalString removeOrphans "--remove-orphans";
 
