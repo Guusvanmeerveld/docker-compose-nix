@@ -97,7 +97,11 @@
 
   networks =
     lib.mapAttrs' (
-      name: {driver}: (lib.nameValuePair (createNetworkSystemdName name) {
+      name: {
+        driver,
+        ip-range,
+        subnet,
+      }: (lib.nameValuePair (createNetworkSystemdName name) {
         description = "Create Docker network '${name}'";
         after = ["docker.service"];
         requires = ["docker.service"];
@@ -107,7 +111,7 @@
         serviceConfig = {
           Type = "oneshot";
 
-          ExecStart = "${docker} network create ${name} --driver ${driver}";
+          ExecStart = "${docker} network inspect ${name} || ${docker} network create ${name} --driver=${driver} --ip-range=${lib.concatStringsSep "," ip-range} --subnet=${lib.concatStringsSep "," subnet}";
           ExecStop = "${docker} network rm ${name}";
 
           RemainAfterExit = true;

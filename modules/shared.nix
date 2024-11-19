@@ -101,6 +101,20 @@ in {
 
               description = "Driver to manage the network";
             };
+
+            ip-range = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [];
+
+              description = "Allocate container ip from a sub-range";
+            };
+
+            subnet = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [];
+
+              description = "Subnet in CIDR format that represents a network segment";
+            };
           };
         });
 
