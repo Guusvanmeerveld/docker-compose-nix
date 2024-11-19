@@ -77,7 +77,7 @@
       in {
         description = "${name} docker compose service";
         after = ["docker.service"] ++ networkDeps;
-        requires = ["docker.service"] ++ networkDeps;
+        bindsTo = ["docker.service"] ++ networkDeps;
 
         wantedBy = ["multi-user.target"];
 
