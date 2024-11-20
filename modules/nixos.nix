@@ -111,7 +111,7 @@
         serviceConfig = {
           Type = "oneshot";
 
-          ExecStart = "${docker} network inspect ${name} || ${docker} network create ${name} --driver=${driver} --ip-range=${lib.concatStringsSep "," ip-range} --subnet=${lib.concatStringsSep "," subnet}";
+          ExecStart = "${docker} network inspect ${name} || ${docker} network create ${name} --driver=${driver} ${lib.optionalString (ip-range != []) "--ip-range=${lib.concatStringsSep "," ip-range}"} ${lib.optionalString (subnet != []) "--subnet=${lib.concatStringsSep "," subnet}"}";
           ExecStop = "${docker} network rm ${name}";
 
           RemainAfterExit = true;
