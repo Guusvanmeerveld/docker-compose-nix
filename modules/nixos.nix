@@ -108,10 +108,18 @@
 
         wantedBy = ["multi-user.target"];
 
-        serviceConfig = {
+        serviceConfig = let
+          createNetworkIfDoesNotExist = pkgs.writeShellApplication {
+            name = "create-network-${name}";
+
+            text = ''
+              ${docker} network inspect ${name} || ${docker} network create ${name} --driver='${driver}' ${lib.optionalString (ip-range != []) "--ip-range='${lib.concatStringsSep "," ip-range}'"} ${lib.optionalString (subnet != []) "--subnet='${lib.concatStringsSep "," subnet}'"}"
+            '';
+          };
+        in {
           Type = "oneshot";
 
-          ExecStart = "${docker} network inspect ${name} || ${docker} network create ${name} --driver=${driver} ${lib.optionalString (ip-range != []) "--ip-range=${lib.concatStringsSep "," ip-range}"} ${lib.optionalString (subnet != []) "--subnet=${lib.concatStringsSep "," subnet}"}";
+          ExecStart = lib.getExe createNetworkIfDoesNotExist;
           ExecStop = "${docker} network rm ${name}";
 
           RemainAfterExit = true;
