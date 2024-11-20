@@ -113,7 +113,7 @@
             name = "create-network-${name}";
 
             text = ''
-              ${docker} network inspect ${name} || ${docker} network create ${name} --driver='${driver}' ${lib.optionalString (ip-range != []) "--ip-range='${lib.concatStringsSep "," ip-range}'"} ${lib.optionalString (subnet != []) "--subnet='${lib.concatStringsSep "," subnet}'"}"
+              ${docker} network inspect ${name} || ${docker} network create ${name} --driver='${driver}' ${lib.optionalString (ip-range != []) "--ip-range='${lib.concatStringsSep "," ip-range}'"} ${lib.optionalString (subnet != []) "--subnet='${lib.concatStringsSep "," subnet}'"}
             '';
           };
         in {
