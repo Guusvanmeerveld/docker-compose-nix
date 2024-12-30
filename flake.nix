@@ -5,9 +5,9 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
   };
 
-  outputs = {nixpkgs, ...}: {
+  outputs = {...}: {
     nixosModules = {
-      default = import ./modules/nixos.nix;
+      default = import ./modules/nixos;
     };
   };
 }
